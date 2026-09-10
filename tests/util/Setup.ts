@@ -12,11 +12,13 @@ import {
   PlayerType,
 } from "../../src/core/game/Game";
 import { createGame } from "../../src/core/game/GameImpl";
+import { generateResourceDeposits } from "../../src/core/game/ResourceDeposits";
 import {
   genTerrainFromBin,
   MapManifest,
 } from "../../src/core/game/TerrainMapLoader";
 import { UserSettings } from "../../src/core/game/UserSettings";
+import { PseudoRandom } from "../../src/core/PseudoRandom";
 import { GameConfig } from "../../src/core/Schemas";
 import { TestConfig } from "./TestConfig";
 
@@ -75,6 +77,11 @@ export async function setup(
   const config = new ConfigClass(gameConfig, new UserSettings(), false);
 
   const game = createGame(humans, [], gameMap, miniGameMap, config);
+  // Match production: deposits are a pure function of map + seed, so a
+  // fixed seed gives deterministic placement in every test game.
+  game.setResourceDeposits(
+    generateResourceDeposits(gameMap, new PseudoRandom(42)),
+  );
   if (autoEndSpawnPhase) game.endSpawnPhase();
   return game;
 }

@@ -19,3 +19,7 @@ export const teamIcon = assetUrl("images/TeamIconSolidWhite.svg");
 export const upperLimitIcon = assetUrl("images/UpperLimitIcon.svg");
 export const allianceIcon = assetUrl("images/AllianceIcon.svg");
 export const traitorIcon = assetUrl("images/TraitorIcon.svg");
+export const oilPumpIcon = assetUrl("images/OilPumpIconWhite.svg");
+export const mineIcon = assetUrl("images/MineIconWhite.svg");
+export const airstripIcon = assetUrl("images/AirstripIconWhite.svg");
+export const airstrikeIcon = assetUrl("images/AirstrikeIconWhite.svg");

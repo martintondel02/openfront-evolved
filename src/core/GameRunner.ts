@@ -27,6 +27,7 @@ import { TileRef } from "./game/GameMap";
 import { GameMapLoader } from "./game/GameMapLoader";
 import { ErrorUpdate, GameUpdateViewData } from "./game/GameUpdates";
 import { createNationsForGame } from "./game/NationCreation";
+import { generateResourceDeposits } from "./game/ResourceDeposits";
 import { loadTerrainMap as loadGameMap } from "./game/TerrainMapLoader";
 import { PseudoRandom } from "./PseudoRandom";
 import { ClientID, GameStartInfo, Turn } from "./Schemas";
@@ -75,6 +76,14 @@ export async function createGameRunner(
     gameMap.miniGameMap,
     config,
     gameMap.teamGameSpawnAreas,
+  );
+
+  // Resource deposits: pure function of (map, gameID), identical everywhere.
+  game.setResourceDeposits(
+    generateResourceDeposits(
+      gameMap.gameMap,
+      new PseudoRandom(simpleHash(gameStart.gameID) + 3),
+    ),
   );
 
   const gr = new GameRunner(

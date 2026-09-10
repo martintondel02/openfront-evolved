@@ -15,14 +15,18 @@ import { UIState } from "../../UIState";
 import { renderNumber, translateText } from "../../Utils";
 import { GameView } from "../../view";
 import {
+  airstrikeIcon,
+  airstripIcon,
   atomBombIcon,
   cityIcon,
   defensePostIcon,
   factoryIcon,
   goldCoinIcon,
   hydrogenBombIcon,
+  mineIcon,
   mirvIcon,
   missileSiloIcon,
+  oilPumpIcon,
   portIcon,
   samLauncherIcon,
   warshipIcon,
@@ -43,6 +47,9 @@ export class UnitDisplay extends LitElement implements Controller {
   private _port = 0;
   private _defensePost = 0;
   private _samLauncher = 0;
+  private _oilPumps = 0;
+  private _mines = 0;
+  private _airstrips = 0;
   private allDisabled = false;
   private _hoveredUnit: PlayerBuildableUnitType | null = null;
   private tutorialHighlight: PlayerBuildableUnitType | null = null;
@@ -105,6 +112,11 @@ export class UnitDisplay extends LitElement implements Controller {
           this.cost(item) <= (player?.gold() ?? 0n) &&
           (player?.units(UnitType.Port).length ?? 0) > 0
         );
+      case UnitType.Airstrike:
+        return (
+          this.cost(item) <= (player?.gold() ?? 0n) &&
+          (player?.units(UnitType.Airstrip).length ?? 0) > 0
+        );
       default:
         return this.cost(item) <= (player?.gold() ?? 0n);
     }
@@ -123,6 +135,9 @@ export class UnitDisplay extends LitElement implements Controller {
     this._samLauncher = player.totalUnitLevels(UnitType.SAMLauncher);
     this._factories = player.totalUnitLevels(UnitType.Factory);
     this._warships = player.totalUnitLevels(UnitType.Warship);
+    this._oilPumps = player.totalUnitLevels(UnitType.OilPump);
+    this._mines = player.totalUnitLevels(UnitType.Mine);
+    this._airstrips = player.totalUnitLevels(UnitType.Airstrip);
     this.requestUpdate();
   }
 
@@ -212,6 +227,34 @@ export class UnitDisplay extends LitElement implements Controller {
             UnitType.MIRV,
             "mirv",
             this.keybinds["buildMIRV"]?.key ?? "0",
+          )}
+          ${this.renderUnitItem(
+            oilPumpIcon,
+            this._oilPumps,
+            UnitType.OilPump,
+            "oil_pump",
+            this.keybinds["buildOilPump"]?.key ?? "O",
+          )}
+          ${this.renderUnitItem(
+            mineIcon,
+            this._mines,
+            UnitType.Mine,
+            "mine",
+            this.keybinds["buildMine"]?.key ?? "I",
+          )}
+          ${this.renderUnitItem(
+            airstripIcon,
+            this._airstrips,
+            UnitType.Airstrip,
+            "airstrip",
+            this.keybinds["buildAirstrip"]?.key ?? "P",
+          )}
+          ${this.renderUnitItem(
+            airstrikeIcon,
+            null,
+            UnitType.Airstrike,
+            "airstrike",
+            this.keybinds["buildAirstrike"]?.key ?? "N",
           )}
         </div>
       </div>

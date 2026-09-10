@@ -1,5 +1,7 @@
 import { Execution, Game, Player, Tick, Unit, UnitType } from "../game/Game";
 import { TileRef } from "../game/GameMap";
+import { AirstrikeExecution } from "./AirstrikeExecution";
+import { AirstripExecution } from "./AirstripExecution";
 import { CityExecution } from "./CityExecution";
 import { DefensePostExecution } from "./DefensePostExecution";
 import { FactoryExecution } from "./FactoryExecution";
@@ -150,6 +152,16 @@ export class ConstructionExecution implements Execution {
       case UnitType.Factory:
         this.mg.addExecution(new FactoryExecution(this.structure!));
         break;
+      case UnitType.Airstrip:
+        this.mg.addExecution(new AirstripExecution(this.structure!));
+        break;
+      case UnitType.OilPump:
+      case UnitType.Mine:
+        // Passive income buildings: no ongoing execution needed.
+        break;
+      case UnitType.Airstrike:
+        this.mg.addExecution(new AirstrikeExecution(player, this.tile));
+        break;
       default:
         console.warn(
           `unit type ${this.constructionType} cannot be constructed`,
@@ -166,6 +178,9 @@ export class ConstructionExecution implements Execution {
       case UnitType.SAMLauncher:
       case UnitType.City:
       case UnitType.Factory:
+      case UnitType.OilPump:
+      case UnitType.Mine:
+      case UnitType.Airstrip:
         return true;
       default:
         return false;

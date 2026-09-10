@@ -280,6 +280,11 @@ export class MapRenderer {
     this.renderer?.updateSmallPlayerGlow(set);
   }
 
+  /** Static resource-deposit buffer (per-tile 0/1/2), set once at game start. */
+  setDepositData(deposits: Uint8Array): void {
+    this.renderer?.setDepositData(deposits);
+  }
+
   // ---- Map layers ----
 
   /** Set up map-layer passes from the loaded layer data. */

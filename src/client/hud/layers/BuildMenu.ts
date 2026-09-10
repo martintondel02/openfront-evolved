@@ -37,6 +37,10 @@ const atomBombIcon = assetUrl("images/NukeIconWhite.svg");
 const portIcon = assetUrl("images/PortIcon.svg");
 const samlauncherIcon = assetUrl("images/SamLauncherIconWhite.svg");
 const shieldIcon = assetUrl("images/ShieldIconWhite.svg");
+const oilPumpIcon = assetUrl("images/OilPumpIconWhite.svg");
+const mineIcon = assetUrl("images/MineIconWhite.svg");
+const airstripIcon = assetUrl("images/AirstripIconWhite.svg");
+const airstrikeIcon = assetUrl("images/AirstrikeIconWhite.svg");
 
 export interface BuildItemDisplay {
   unitType: PlayerBuildableUnitType;
@@ -116,6 +120,36 @@ export const buildTable: BuildItemDisplay[][] = [
       icon: factoryIcon,
       description: "build_menu.desc.factory",
       key: "unit_type.factory",
+      countable: true,
+    },
+  ],
+  [
+    {
+      unitType: UnitType.OilPump,
+      icon: oilPumpIcon,
+      description: "build_menu.desc.oil_pump",
+      key: "unit_type.oil_pump",
+      countable: true,
+    },
+    {
+      unitType: UnitType.Mine,
+      icon: mineIcon,
+      description: "build_menu.desc.mine",
+      key: "unit_type.mine",
+      countable: true,
+    },
+    {
+      unitType: UnitType.Airstrip,
+      icon: airstripIcon,
+      description: "build_menu.desc.airstrip",
+      key: "unit_type.airstrip",
+      countable: true,
+    },
+    {
+      unitType: UnitType.Airstrike,
+      icon: airstrikeIcon,
+      description: "build_menu.desc.airstrike",
+      key: "unit_type.airstrike",
       countable: true,
     },
   ],

@@ -343,6 +343,25 @@ export class Config {
   SiloCooldown(): number {
     return 90;
   }
+  AirstripCooldown(): number {
+    return 120;
+  }
+  /** Airstrike flight speed (tiles/tick). Faster than atom bombs. */
+  airstrikeSpeed(): number {
+    return 14;
+  }
+  /** Blast radius: structures destroyed inside `inner`, all units inside `outer`. */
+  airstrikeMagnitudes(): NukeMagnitude {
+    return { inner: 6, outer: 12 };
+  }
+  /** Troops killed fraction per impacted tile (mirrors nukeDeathFactor shape). */
+  airstrikeDeathFactor(humans: number, tilesOwned: number): number {
+    return (2 * humans) / Math.max(1, tilesOwned);
+  }
+  /** Max tiles between airstrip and target. */
+  airstrikeMaxRange(): number {
+    return 120;
+  }
 
   defensePostRange(): number {
     return 30;
@@ -440,7 +459,11 @@ export class Config {
     }
     const distPenalty = citiesVisited * 5_000;
     const gold = Math.max(5000, baseGold - distPenalty);
-    return toInt(gold * this.goldMultiplierFor(player));
+    return toInt(
+      gold *
+        this.goldMultiplierFor(player) *
+        this.resourceTradeMultiplier(player),
+    );
   }
 
   trainStationMinRange(): number {
@@ -457,7 +480,37 @@ export class Config {
     // Sigmoid: concave start, sharp S-curve middle, linear end - heavily punishes trades under range debuff.
     const debuff = this.tradeShipShortRangeDebuff();
     const baseGold = 75_000 / (1 + exp(-0.03 * (dist - debuff))) + 50 * dist;
-    return BigInt(Math.floor(baseGold * this.goldMultiplierFor(player)));
+    return BigInt(
+      Math.floor(
+        baseGold *
+          this.goldMultiplierFor(player) *
+          this.resourceTradeMultiplier(player),
+      ),
+    );
+  }
+
+  /**
+   * Each extraction building (oil pump, mine) adds a percent bonus to trade
+   * income, capped. Derived from deterministic sim state (unit counts).
+   */
+  resourceTradeBonusPercent(): number {
+    return 0.15;
+  }
+  resourceTradeBonusCap(): number {
+    return 8;
+  }
+  private resourceTradeMultiplier(player: Player | PlayerView): number {
+    // Core Player has unitCount; PlayerView (renderer) only feeds previews.
+    const countFn = (player as Player).unitCount;
+    const count =
+      typeof countFn === "function"
+        ? Math.min(
+            countFn.call(player, UnitType.OilPump) +
+              countFn.call(player, UnitType.Mine),
+            this.resourceTradeBonusCap(),
+          )
+        : 0;
+    return 1 + count * this.resourceTradeBonusPercent();
   }
 
   // Probability of trade ship spawn = 1 / tradeShipSpawnRate
@@ -606,6 +659,38 @@ export class Config {
       case UnitType.Train:
         info = {
           cost: () => 0n,
+        };
+        break;
+      case UnitType.OilPump:
+        info = {
+          cost: this.costWrapper(
+            (numUnits: number) => Math.min(500_000, (numUnits + 1) * 150_000),
+            UnitType.OilPump,
+          ),
+          constructionDuration: this.instantBuild() ? 0 : 8 * 10,
+          upgradable: true,
+        };
+        break;
+      case UnitType.Mine:
+        info = {
+          cost: this.costWrapper(
+            (numUnits: number) => Math.min(500_000, (numUnits + 1) * 150_000),
+            UnitType.Mine,
+          ),
+          constructionDuration: this.instantBuild() ? 0 : 8 * 10,
+          upgradable: true,
+        };
+        break;
+      case UnitType.Airstrip:
+        info = {
+          cost: this.costWrapper(() => 1_500_000, UnitType.Airstrip),
+          constructionDuration: this.instantBuild() ? 0 : 12 * 10,
+          upgradable: true,
+        };
+        break;
+      case UnitType.Airstrike:
+        info = {
+          cost: this.costWrapper(() => 400_000, UnitType.Airstrike),
         };
         break;
       default:

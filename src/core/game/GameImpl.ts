@@ -29,6 +29,7 @@ import {
   PlayerInfo,
   PlayerType,
   Quads,
+  ResourceDepositType,
   SpawnArea,
   Team,
   TeamGameSpawnAreas,
@@ -118,6 +119,23 @@ export class GameImpl implements Game {
   private _teamGameSpawnAreas: TeamGameSpawnAreas | undefined;
   /** Tiles from nuke blast radii this tick, drained by the renderer. */
   private _nukeImpactQueue: TileRef[] = [];
+  /** Per-tile deposit, 0 = none, 1 = oil, 2 = ore. Set once at game start. */
+  private _resourceDeposits: Uint8Array | null = null;
+
+  setResourceDeposits(deposits: Uint8Array): void {
+    this._resourceDeposits = deposits;
+  }
+  resourceDeposits(): Uint8Array | null {
+    return this._resourceDeposits;
+  }
+  hasResourceDeposit(tile: TileRef): boolean {
+    return this._resourceDeposits !== null && this._resourceDeposits[tile] > 0;
+  }
+  resourceDepositType(tile: TileRef): ResourceDepositType | null {
+    if (this._resourceDeposits === null) return null;
+    const v = this._resourceDeposits[tile];
+    return v === 0 ? null : (v as ResourceDepositType);
+  }
 
   constructor(
     private _humans: PlayerInfo[],

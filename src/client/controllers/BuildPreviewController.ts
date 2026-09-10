@@ -456,6 +456,9 @@ export class BuildPreviewController implements Controller {
       case UnitType.HydrogenBomb:
         rangeRadius = this.game.config().nukeMagnitudes(u.type).outer;
         break;
+      case UnitType.Airstrike:
+        rangeRadius = this.game.config().airstrikeMagnitudes().outer;
+        break;
       case UnitType.Factory:
         rangeRadius = this.game.config().trainStationMaxRange();
         break;

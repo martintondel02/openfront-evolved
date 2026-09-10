@@ -35,6 +35,23 @@ const REQUIRED_TEXTURE_SIZE = getPaletteSize();
 // in utilities/Diagnostic.ts.
 const SOFTWARE_RENDERER = /swiftshader|llvmpipe|software/i;
 
+/** Dev/testing escape hatch: `sessionStorage.__allowSoftwareGL = "1"` (or the
+ *  `?allowSoftwareGL=1` query flag, which persists it) lets headless/CI runs
+ *  use SwiftShader instead of gating. Not user-facing. */
+function allowSoftwareGL(): boolean {
+  try {
+    if (
+      typeof location !== "undefined" &&
+      new URLSearchParams(location.search).get("allowSoftwareGL") === "1"
+    ) {
+      sessionStorage.setItem("__allowSoftwareGL", "1");
+    }
+    return sessionStorage.getItem("__allowSoftwareGL") === "1";
+  } catch {
+    return false;
+  }
+}
+
 /** Read the unmasked GPU renderer string, or "unknown" if unavailable. */
 function readRenderer(gl: WebGL2RenderingContext): string {
   const dbg = gl.getExtension("WEBGL_debug_renderer_info");
@@ -53,10 +70,10 @@ export function initGL(
   canvas: HTMLCanvasElement,
   attrs: WebGLContextAttributes = {},
 ): GLResult {
-  // 1. demand a GPU-accelerated context
+  // 1. demand a GPU-accelerated context (unless explicitly relaxed)
   const accel = canvas.getContext("webgl2", {
     ...attrs,
-    failIfMajorPerformanceCaveat: true,
+    failIfMajorPerformanceCaveat: !allowSoftwareGL(),
   });
   if (accel) {
     // failIfMajorPerformanceCaveat does NOT reliably reject a software context
@@ -65,7 +82,7 @@ export function initGL(
     // So inspect the renderer and gate if it's software; the game is unplayable
     // (~1fps) on it either way.
     const renderer = readRenderer(accel);
-    if (SOFTWARE_RENDERER.test(renderer)) {
+    if (SOFTWARE_RENDERER.test(renderer) && !allowSoftwareGL()) {
       return { gl: null, status: "software", renderer };
     }
     // Fingerprinting protection caps texture sizes on an otherwise

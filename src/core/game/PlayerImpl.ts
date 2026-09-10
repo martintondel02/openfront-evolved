@@ -33,6 +33,7 @@ import {
   PlayerProfile,
   PlayerType,
   Relation,
+  ResourceDepositType,
   Structures,
   Team,
   TerraNullius,
@@ -1591,10 +1592,71 @@ export class PlayerImpl implements Player {
       case UnitType.SAMLauncher:
       case UnitType.City:
       case UnitType.Factory:
+      case UnitType.Airstrip:
         return this.landBasedStructureSpawn(targetTile, validTiles);
+      case UnitType.OilPump:
+        return this.extractorSpawn(
+          targetTile,
+          validTiles,
+          ResourceDepositType.Oil,
+        );
+      case UnitType.Mine:
+        return this.extractorSpawn(
+          targetTile,
+          validTiles,
+          ResourceDepositType.Ore,
+        );
+      case UnitType.Airstrike:
+        return this.airstripSpawn(targetTile);
       default:
         assertNever(unitType);
     }
+  }
+
+  /**
+   * Airstrikes launch from the nearest ready (active, not cooling down)
+   * airstrip. Requires the target to be on land and not immune/impassable.
+   */
+  airstripSpawn(targetTile: TileRef): TileRef | false {
+    const mg = this.mg;
+    if (mg.isSpawnImmunityActive()) return false;
+    if (!mg.isLand(targetTile) || mg.isImpassable(targetTile)) return false;
+    const owner = mg.owner(targetTile);
+    const gameOver = mg.getWinner() !== null;
+    if (owner.isPlayer()) {
+      if (owner === this && !gameOver) return false; // no striking own land
+      if (this.isOnSameTeam(owner) && !gameOver) return false;
+      if (owner !== this && this.isFriendly(owner, true)) return false;
+    }
+    const ready = this.units(UnitType.Airstrip).filter(
+      (a) => a.isActive() && !a.isInCooldown() && !a.isUnderConstruction(),
+    );
+    if (ready.length === 0) return false;
+    ready.sort(
+      (a, b) =>
+        mg.manhattanDist(a.tile(), targetTile) -
+        mg.manhattanDist(b.tile(), targetTile),
+    );
+    return ready[0].tile();
+  }
+
+  /**
+   * Extractors (oil pump, mine) sit on a matching deposit, inside the
+   * player's own territory, respecting structure spacing.
+   */
+  extractorSpawn(
+    tile: TileRef,
+    validTiles: TileRef[] | null,
+    depositType: ResourceDepositType,
+  ): TileRef | false {
+    const mg = this.mg;
+    const tiles = validTiles ?? this.validStructureSpawnTiles(tile);
+    for (const t of tiles) {
+      if (mg.resourceDepositType(t) === depositType) {
+        return t;
+      }
+    }
+    return false;
   }
 
   nukeSpawn(tile: TileRef, nukeType: UnitType): TileRef | false {

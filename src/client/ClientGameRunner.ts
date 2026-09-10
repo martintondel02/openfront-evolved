@@ -1,4 +1,7 @@
+import { PseudoRandom } from "src/core/PseudoRandom";
+import { simpleHash } from "src/core/Util";
 import { Config } from "src/core/configuration/Config";
+import { generateResourceDeposits } from "src/core/game/ResourceDeposits";
 import { ClientEnv } from "../client/ClientEnv";
 import { reloadForUpdate, translateText } from "../client/Utils";
 import { EventBus } from "../core/EventBus";
@@ -695,6 +698,14 @@ async function createClientGame(
       gameMap,
       config,
       resolveRenderSettings(),
+    );
+
+    // Resource deposits — same pure function the worker used, deterministic.
+    view.setDepositData(
+      generateResourceDeposits(
+        gameMap.gameMap,
+        new PseudoRandom(simpleHash(lobbyConfig.gameStartInfo.gameID) + 3),
+      ),
     );
 
     const graphicsListenerAbort = new AbortController();

@@ -208,6 +208,10 @@ export enum UnitType {
   MIRVWarhead = "MIRV Warhead",
   Train = "Train",
   Factory = "Factory",
+  OilPump = "Oil Pump",
+  Mine = "Mine",
+  Airstrip = "Airstrip",
+  Airstrike = "Airstrike",
 }
 
 export enum TrainType {
@@ -228,6 +232,7 @@ export const BuildableAttacks = unitTypeGroup([
   UnitType.HydrogenBomb,
   UnitType.MIRV,
   UnitType.Warship,
+  UnitType.Airstrike,
 ] as const);
 
 export const Structures = unitTypeGroup([
@@ -237,6 +242,9 @@ export const Structures = unitTypeGroup([
   UnitType.MissileSilo,
   UnitType.Port,
   UnitType.Factory,
+  UnitType.OilPump,
+  UnitType.Mine,
+  UnitType.Airstrip,
 ] as const);
 
 export const BuildMenus = unitTypeGroup([
@@ -317,6 +325,17 @@ export interface UnitParamsMap {
   [UnitType.SAMLauncher]: Record<string, never>;
 
   [UnitType.City]: Record<string, never>;
+
+  [UnitType.OilPump]: Record<string, never>;
+
+  [UnitType.Mine]: Record<string, never>;
+
+  [UnitType.Airstrip]: Record<string, never>;
+
+  [UnitType.Airstrike]: {
+    targetTile?: number;
+    trajectory: TrajectoryTile[];
+  };
 }
 
 // Type helper to get params type for a specific unit type
@@ -939,6 +958,18 @@ export interface Game extends GameMap {
 
   /** Drain all tiles from nuke impacts this tick. Called once per tick. */
   drainNukeImpacts(): TileRef[];
+
+  // Resource deposits (oil/ore). Seed-generated at game start, immutable.
+  hasResourceDeposit(tile: TileRef): boolean;
+  resourceDepositType(tile: TileRef): ResourceDepositType | null;
+  setResourceDeposits(deposits: Uint8Array): void;
+  resourceDeposits(): Uint8Array | null;
+}
+
+export enum ResourceDepositType {
+  None = 0,
+  Oil = 1,
+  Ore = 2,
 }
 
 export interface PlayerActions {
