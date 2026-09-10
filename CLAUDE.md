@@ -52,6 +52,19 @@ Every WebSocket frame is a compact binary encoding of those schemas
 
 The game server only serves `index.html` and the WebSocket. All other assets (JS bundle, images, maps, worker) come from a CDN bucket. `CDN_BASE` is an empty string in dev (falls back to same-origin) and a full origin (e.g. `https://cdn.example.com`) in production. It is set as both a Vite build-time variable and a server runtime env var.
 
+## OpenFront Evolved additions
+
+This fork adds land resources (oil/ore deposits + extractor buildings), and an
+airstrike system (airstrip + interceptable jet). See `docs/OpenFrontEvolved.md`
+for the design and `docs/OpenFrontEvolved-Reference.md` for the player-facing
+guide. Key touchpoints:
+
+- `src/core/game/ResourceDeposits.ts` — seed-deterministic deposit generation
+- `src/core/game/PlayerImpl.ts` — `extractorSpawn`, `airstripSpawn`
+- `src/core/execution/AirstrikeExecution.ts`, `AirstripExecution.ts` — flight + charges
+- `src/client/render/gl/passes/DepositPass.ts` — static deposit overlay
+- `scripts/extendIconAtlas.mjs` — regenerates `resources/atlases/icon-atlas.png`
+
 ## Key Files
 
 | File                        | Purpose                                |
